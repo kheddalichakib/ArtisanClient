@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Styles CSS */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 400px;
+      width: 100%;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    h2 {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    #img {
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      margin-bottom: 20px;
+      border: 2px solid #007bff;
+    }
+    p {
+      font-size: 16px;
+      color: #555;
+      margin: 8px 0;
+    }
+    .label {
+      font-weight: bold;
+      color: #333;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h2 id="h2"></h2>
+    <img id="img" alt="Profil" />
+    <p><span class="label">Nom:</span> <span id="Nom"></span></p>
+    <p><span class="label">Prénom:</span> <span id="prenom"></span></p>
+    <p><span class="label">Localisation:</span> <span id="location"></span></p>
+    <p><span class="label">Numéro de téléphone:</span> <span id="numero-telephone"></span></p>
+    <button type="button" id="button">Choisir</button>
+  </div>
+
+  <script>
+    let parms = new URLSearchParams(window.location.search);
+    let name = parms.get("username");
+    let clientname = parms.get("clientid");
+    let response = JSON.parse(localStorage.getItem(name));
+
+    let username = document.getElementById("h2");
+    let img = document.getElementById("img");
+    let nom = document.getElementById("Nom");
+    let locationn = document.getElementById("location");
+    let prenom = document.getElementById("prenom");
+    let telephone = document.getElementById("numero-telephone");
+
+    // Remplir les informations du profil
+    username.textContent = `Compte de ${response.results[0].name.first}`;
+    img.src = response.results[0].picture.large;
+    nom.textContent = response.results[0].name.last;
+    prenom.textContent = response.results[0].name.first;
+    locationn.textContent = `${response.results[0].location.street.number}, ${response.results[0].location.street.name}`;
+    telephone.textContent = response.results[0].phone;
+
+
+// demende d'ouverture database
+let db;
+let request = indexedDB.open("Artisandatabase", 1);
+
+request.onupgradeneeded = function(event) {
+  db = event.target.result;
+  db.createObjectStore("Artisan", { keyPath: "uuid" });
+};
+// ouverture reussi de la base de donnes
+request.onsuccess = function(event) {
+  db = event.target.result;
+  console.log(db);
+
+  let button = document.getElementById("button");
+  button.addEventListener("click", function() {
+    // ouvrir une nouvelle transaction pour avoir nouveau element
+    let transaction = db.transaction(["Artisan"], "readwrite");
+    let objectStore = transaction.objectStore("Artisan");
+    // recupere id de l'artisan
+    let uuid = response.results[0].login.uuid;
+    // demande get request sur la table artisan
+    let getRequest = objectStore.get(uuid);
+    // demande get reuissi
+    getRequest.onsuccess = function(event) {
+      let data = event.target.result;
+      console.log(data);
+
+      let newButton = document.createElement("button");
+      newButton.textContent = "Valider le choix";
+
+      newButton.addEventListener("click", function() {
+        let transaction = db.transaction(["Artisan"], "readwrite");
+        let objectStore = transaction.objectStore("Artisan");
+       
+
+        data.orders.push({
+          orderid: data.orders.length + 1,
+          clientid: clientname
+        });
+
+        let updateRequest = objectStore.put(data);
+
+        updateRequest.onsuccess = function(event) {
+          console.log("Données mises à jour avec succès", event.target.result);
+          
+          window.location.href=`client.html?username=${clientname}`
+        };
+
+        updateRequest.onerror = function(event) {
+          console.log("Erreur lors de la mise à jour :", event.target.errorCode);
+        };
+
+        this.remove(); // Retirer le bouton après la mise à jour
+      });
+
+      // Remplacer le bouton actuel par le nouveau bouton
+      button.parentNode.replaceChild(newButton, button);
+    };
+
+    getRequest.onerror = function(event) {
+      console.log("Erreur lors de la récupération :", event.target.errorCode);
+    };
+  });
+};
+
+  request.onerror = function(event) {
+  console.log("Erreur lors de l'ouverture de la base de données :", event.target.errorCode);
+};
+
+</script>
+</body>
+</html>

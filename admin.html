@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Styled Login Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f3f5;
+            color: #333;
+        }
+
+        #container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 1100px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            gap: 80px;
+        }
+
+        #profile-container {
+            flex: 1;
+            text-align: left;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #007BFF;
+            font-weight: 600;
+        }
+
+        #img {
+            display: block;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 3px solid #007BFF;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background-color: #f8f9fa;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+            font-weight: 600;
+        }
+
+        td {
+            background-color: #ffffff;
+        }
+
+        td:hover {
+            background-color: #f1f3f5;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            background-color: #f8f9fa;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <div id="profile-container">
+            <h2 id="h2"></h2>
+            <img id="img" alt="Profil">
+            <p><span class="label">Nom:</span> <span id="Nom"></span></p>
+            <p><span class="label">Prénom:</span> <span id="prenom"></span></p>
+            <p><span class="label">Localisation:</span> <span id="location"></span></p>
+            <p><span class="label">Numéro de téléphone:</span> <span id="numero-telephone"></span></p>
+        </div>
+        <button type="button" id="button">See Orders</button>
+        <div id="jamel"></div>
+    </div>
+
+    <script>
+        let parms = new URLSearchParams(window.location.search);
+        let response = parms.get('username');
+
+        let required = localStorage.getItem(response);
+        let ok = JSON.parse(required);
+
+        let username = document.getElementById("h2");
+        let img = document.getElementById("img");
+        let nom = document.getElementById("Nom");
+        let locationn = document.getElementById("location");
+        let prenom = document.getElementById("prenom");
+        let telephone = document.getElementById("numero-telephone");
+
+        username.textContent = `Compte de ${ok.results[0].name.first}`;
+        img.src = ok.results[0].picture.large;
+        nom.textContent = ok.results[0].name.last;
+        prenom.textContent = ok.results[0].name.first;
+        locationn.textContent = `${ok.results[0].location.street.number}, ${ok.results[0].location.street.name}`;
+        telephone.textContent = ok.results[0].phone;
+
+        let button = document.getElementById("button");
+        let tabelee = document.getElementById("jamel");
+        let table = document.createElement("table");
+        let db;
+        let request = indexedDB.open("Artisandatabase", 1);
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            db.createObjectStore("Artisan", { keyPath: "uuid" });
+        };
+
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            
+
+            button.addEventListener("click", function () {
+                let transaction = db.transaction(["Artisan"], "readwrite");
+                let objectStore = transaction.objectStore("Artisan");
+                let adminName = ok.results[0].login.uuid;
+
+                let getRequest = objectStore.get(adminName);
+                getRequest.onsuccess = function (event) {
+                   
+                    
+                    if(!tabelee.contains(table)||table.innerHTML===""){
+                     
+                    
+                    let tablerow = document.createElement("tr");
+
+                    let th1 = document.createElement("th");
+                    th1.textContent = "Order Number";
+
+                    let th2 = document.createElement("th");
+                    th2.textContent = "Nom";
+
+                    let th3 = document.createElement("th");
+                    th3.textContent = "Prénom";
+
+                    let th4 = document.createElement("th");
+                    th4.textContent = "Localisation";
+
+                    let th5 = document.createElement("th");
+                    th5.textContent = "Téléphone";
+
+                    tablerow.appendChild(th1);
+                    tablerow.appendChild(th2);
+                    tablerow.appendChild(th3);
+                    tablerow.appendChild(th4);
+                    tablerow.appendChild(th5);
+                    table.appendChild(tablerow);
+
+                    event.target.result.orders.forEach(element => {
+                        let tablerow = document.createElement("tr");
+                        let client = JSON.parse(localStorage.getItem(element.clientid));
+
+                        let response = [
+                            element.orderid,
+                            client.results[0].name.first,
+                            client.results[0].name.last,
+                            `${client.results[0].location.street.number}, ${client.results[0].location.street.name}`,
+                            client.results[0].phone
+                        ];
+
+                        response.forEach(response => {
+                            let tableData = document.createElement("td");
+                            tableData.textContent = response;
+                            tablerow.appendChild(tableData);
+                        });
+
+                        table.appendChild(tablerow);
+                    });
+
+                    tabelee.appendChild(table);
+                
+                
+            };
+        }
+            });
+        };
+        document.addEventListener("click",function(event){
+            if(!tabelee.contains(event.target)){
+                table.innerHTML=""
+            }
+        })
+    </script>
+</body>
+</html>

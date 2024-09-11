@@ -1,0 +1,316 @@
+<!DOCTYPE html> 
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil Utilisateur</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    #container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      gap: 100px;
+    }
+
+    #profile-container {
+      flex: 1;
+      text-align: left;
+      padding-right: 20px;
+    }
+
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    #img {
+      display: block;
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 10px 0;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    form {
+      flex: 1;
+      text-align: left;
+    }
+
+    label {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    select {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      background-color: #f8f9fa;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #007BFF;
+    }
+
+    table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <div id="profile-container">
+      <h2 id="h2"></h2>
+      <img id="img" alt="Profil">
+      <p><span class="label">Nom:</span> <span id="Nom"></span></p>
+      <p><span class="label">Prénom:</span> <span id="prenom"></span></p>
+      <p><span class="label">Localisation:</span> <span id="location"></span></p>
+      <p><span class="label">Numéro de téléphone:</span> <span id="numero-telephone"></span></p>
+    </div>
+
+    <form>
+      <label for="option">Choisir un service :</label>
+      <select name="option" id="select">
+        <!-- Les options seront ajoutées ici dynamiquement -->
+      </select>
+      
+    </form>
+    <div id="omar"></div>
+  </div>
+
+  <script>
+    // Fonction pour vérifier si une option existe déjà
+    let select = document.getElementById("select");
+    function exist(value) {
+      for (var i = 0; i < select.options.length; i++) {
+        if (value == select.options[i].value) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Boucle à travers le localStorage pour récupérer les services
+    for (var i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      let response = JSON.parse(localStorage.getItem(key));
+
+      if (response.status == "admin" && !exist(response.profession)) {
+        let option = document.createElement("option");
+        option.value = response.profession;
+        option.textContent = response.profession;
+        select.appendChild(option);
+      }
+    }
+
+    // Obtenir les paramètres de l'URL
+    let parms = new URLSearchParams(window.location.search);
+    let response = parms.get('username');
+
+    // Récupérer les données du localStorage
+    let required = localStorage.getItem(response);
+    let ok = JSON.parse(required);
+    
+    // Affecter les éléments HTML
+    let username = document.getElementById("h2");
+    let img = document.getElementById("img");
+    let nom = document.getElementById("Nom");
+    let locationn = document.getElementById("location");
+    let prenom = document.getElementById("prenom");
+    let telephone = document.getElementById("numero-telephone");
+
+    // Remplir les informations du profil
+    username.textContent = `Compte de ${ok.results[0].name.first}`;
+    img.src = ok.results[0].picture.large;
+    nom.textContent = ok.results[0].name.last;
+    prenom.textContent = ok.results[0].name.first;
+    locationn.textContent = `${ok.results[0].location.street.number}, ${ok.results[0].location.street.name}`;
+    telephone.textContent = ok.results[0].phone;
+
+    // Ajouter un gestionnaire d'événements pour le changement de sélection
+  let conta = document.getElementById("omar");
+
+  function createTable(profession) {
+    let table = document.createElement("table");
+
+    // En-tête du tableau
+    let row = document.createElement("tr");
+    let th1 = document.createElement("th");
+    th1.textContent = "Prénom";
+    let th2 = document.createElement("th");
+    th2.textContent = "Nom";
+    let th3 = document.createElement("th");
+    th3.textContent = "Numéro de téléphone";
+    row.appendChild(th1);
+    row.appendChild(th2);
+    row.appendChild(th3);
+    table.appendChild(row);
+
+    // Remplir les données pour chaque profession
+    for (var i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      let response = JSON.parse(localStorage.getItem(key));
+
+      if (response.profession === profession) {
+        let row2 = document.createElement("tr");
+        let data1 = document.createElement("td");
+        data1.textContent = response.results[0].name.first;
+        let data2 = document.createElement("td");
+        data2.textContent = response.results[0].name.last;
+        let data3 = document.createElement("td");
+        data3.textContent = response.results[0].phone;
+        row2.appendChild(data1);
+        row2.appendChild(data2);
+        row2.appendChild(data3);
+        table.appendChild(row2);
+      }
+    }
+    
+    let tablerow = table.getElementsByTagName("tr");
+
+
+//add event lisniter to every row
+for (let i = 1; i < tablerow.length; i++) {
+  
+    tablerow[i].addEventListener("click", function() {
+      let tableData = tablerow[i].getElementsByTagName("td")[0];
+      console.log(tableData);
+
+      for (var y = 0; y < localStorage.length; y++) {
+        let key = localStorage.key(y);
+        let data = JSON.parse(localStorage.getItem(key));
+        
+        if (data.results[0].name.first === tableData.textContent) {
+          let uuid = data.results[0].login.uuid;
+          window.location.href=`artisan.html?username=${uuid}&&clientid=${ok.results[0].login.uuid}`
+          break;
+        }
+
+      }
+     
+    });
+  }
+  return table;  // Utilisation de a closure pour capturer la valeur de i
+}
+
+
+
+
+  select.addEventListener('change', function() {
+    let selectedValue = select.value;
+    conta.innerHTML = ""; // Réinitialise le contenu à chaque changement
+
+    if (selectedValue === "macon") {
+      conta.appendChild(createTable("macon"));
+    } else if (selectedValue === "plombier") {
+      conta.appendChild(createTable("plombier"));
+    } else if (selectedValue === "chaufagiste") {
+      conta.appendChild(createTable("chaufagiste"));
+    }
+  });
+
+  document.addEventListener('click', function(event) {
+    if (!conta.contains(event.target) && !select.contains(event.target)) {
+      conta.innerHTML = ""; // Efface la table si on clique à l'extérieur
+    }
+  })
+  
+  let db 
+  let request=indexedDB.open("Artisandatabase",1)
+
+  request.onupgradeneeded=function(event){
+     db=event.target.result
+    obejectstore=db.createObjectStore("Artisan",{keyPath:"uuid"})
+  }
+  
+
+  request.onsuccess=function(event){
+    db=event.target.result
+    let transaction=db.transaction(["Artisan"],"readwrite")
+    let obejectStore=transaction.objectStore("Artisan")
+    for(let i=0;i<localStorage.length;i++){
+      let key=localStorage.key(i)
+      let artisan=JSON.parse(localStorage.getItem(key))
+      
+      if(artisan.status=="admin"){
+      
+      let response={
+        "uuid":artisan.results[0].login.uuid,
+        "orders":[],
+        
+      }
+    
+     let getRequest=obejectStore.get(artisan.results[0].login.uuid)
+     getRequest.onsuccess=function(event){
+        console.log(event.target.result)
+       let transaction=db.transaction(["Artisan"],"readwrite")
+       let obejectStore=transaction.objectStore("Artisan")
+       let addrequest=obejectStore.add(response)
+       addrequest.onsuccess=function(event){
+        console.log("true")
+        console.log(event.target.result)
+      }
+      addrequest.onerror=function(event){
+        console.log("user with this id alerd")
+        console.log(event.target.result)
+      }
+}
+
+    }
+  }
+}
+
+
+  
+
+  </script>
+
+</body>
+
+</html>
