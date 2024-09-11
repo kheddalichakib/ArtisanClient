@@ -37,7 +37,7 @@ async function generateUser() {
     console.log(response)
    }
  }
- storage()
+ 
  
  // authontifiaction
  let sumbitButton=document.getElementById("submit")
