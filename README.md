@@ -1,4 +1,4 @@
-I am excited to present my very first web development project: an innovative application designed to facilitate the connection between clients and artisans. This project was built using Vanilla JavaScript, HTML, CSS, and incorporates several technologies such as the RandomUser API, asynchronous functions, IndexedDB, and Local Storage for data management.
+an innovative application designed to facilitate the connection between clients and artisans. This project was built using Vanilla JavaScript, HTML, CSS, and incorporates several technologies such as the RandomUser API, asynchronous functions, IndexedDB, and Local Storage for data management.
 
 Project Overview
 Objective: The application aims to create a platform where each user has a personalized portal based on their role, either as a client or an artisan.
